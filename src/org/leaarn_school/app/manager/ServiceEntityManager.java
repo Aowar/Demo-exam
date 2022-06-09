@@ -14,8 +14,7 @@ public class ServiceEntityManager {
         Statement s = c.createStatement();
         ResultSet rs = s.executeQuery(sql);
         List<ServiceEntity> list = new ArrayList<>();
-
-        while(rs.next()) {
+        while (rs.next()) {
             list.add(new ServiceEntity(
                     rs.getInt("ID"),
                     rs.getString("Title"),
@@ -33,7 +32,7 @@ public class ServiceEntityManager {
     public static void insert(ServiceEntity serviceEntity) throws SQLException {
         Connection c = App.getConnection();
         String sql = "INSERT INTO Service(Title, Cost, Duration, Description, Discount, date, MainImagePath) VALUES(?,?,?,?,?,?,?)";
-        PreparedStatement ps = c.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         ps.setString(1, serviceEntity.getTitle());
         ps.setDouble(2, serviceEntity.getCost());
         ps.setInt(3, serviceEntity.getDuration());
@@ -53,7 +52,7 @@ public class ServiceEntityManager {
 
     public static void update(ServiceEntity serviceEntity) throws SQLException {
         Connection c = App.getConnection();
-        String sql = "UPDATE Service SET Title=?, Cost=?, Duration=?, Description=?, Discount=?, date=?, MainImagePath=? WHERE ID=?";
+        String sql = "UPDATE Service Title=?, Cost=?, Duration=?, Description=?, Discount=?, date=?, MainImagePath=? WHERE ID=?";
         PreparedStatement ps = c.prepareStatement(sql);
         ps.setString(1, serviceEntity.getTitle());
         ps.setDouble(2, serviceEntity.getCost());

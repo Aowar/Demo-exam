@@ -1,5 +1,8 @@
 package org.leaarn_school.app.ui;
 
+import com.mysql.cj.xdevapi.Column;
+import com.mysql.cj.xdevapi.UpdateParams;
+import org.leaarn_school.app.App;
 import org.leaarn_school.app.entity.ServiceEntity;
 import org.leaarn_school.app.manager.ServiceEntityManager;
 import org.leaarn_school.app.util.BaseForm;
@@ -21,80 +24,54 @@ public class ServiceTableForm extends BaseForm {
     private JComboBox comboBox;
     private JButton sortButton;
     private JLabel amountLabel;
+    private JButton createButton;
     private CustomTableModel<ServiceEntity> model;
     private boolean sortFlag = false;
 
+
     public ServiceTableForm() {
-        super(1200, 800);
+        super(800, 600);
         setContentPane(mainPanel);
         initTable();
         initButtons();
         initBoxes();
 
+        amountLabel.setText("Отображено 100/100");
+
         setVisible(true);
-    }
-
-    private void initTable() {
-        try {
-            model = new CustomTableModel<>(
-                    ServiceEntity.class,
-                    new String[]{"ID", "Наименование услуги", "Стоимость", "Длительность", "Описание", "Скидка", "Дата", "Путь к картинке", "Картинка"},
-                    ServiceEntityManager.selectALl()
-            );
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-            DialogUtil.ShowError(this, "Ошибка вывода таблицы\n" + throwables.getMessage());
+        if(App.isAdmin) {
+            DialogUtil.ShowInfo(null, "Вы вошли как админ");
         }
-        table.setRowHeight(50);
-        table.setModel(model);
-        table.getTableHeader().setReorderingAllowed(false);
-        TableColumn column1 = table.getColumn("ID");
-        column1.setMinWidth(0);
-        column1.setMaxWidth(0);
-        column1.setPreferredWidth(0);
-
-        TableColumn column2 = table.getColumn("Путь к картинке");
-        column2.setMinWidth(0);
-        column2.setMaxWidth(0);
-        column2.setPreferredWidth(0);
-
-        table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() == MouseEvent.BUTTON2) {
-                    int row = table.rowAtPoint(e.getPoint());
-                    if (row != -1) {
-                        dispose();
-                        new ServiceUpdateForm(model.getRows().get(row));
-                    }
-                }
-            }
-        });
     }
 
     private void initBoxes() {
         comboBox.addItemListener(e -> {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
+            if(e.getStateChange() == ItemEvent.SELECTED){
                 try {
                     List<ServiceEntity> list = ServiceEntityManager.selectALl();
                     switch (comboBox.getSelectedIndex()) {
-                        case 1 -> list.removeIf(s -> s.getDiscount() > 5);
-                        case 2 -> list.removeIf(s -> s.getDiscount() <= 5 || s.getDiscount() > 15);
-                        case 3 -> list.removeIf(s -> s.getDiscount() <= 15 || s.getDiscount() > 30);
-                        case 4 -> list.removeIf(s -> s.getDiscount() <= 30 || s.getDiscount() > 70);
-                        case 5 -> list.removeIf(s -> s.getDiscount() <= 70);
+                        case 1 -> list.removeIf(serviceEntity -> serviceEntity.getDiscount() > 5);
+                        case 2 -> list.removeIf(serviceEntity -> serviceEntity.getDiscount() <= 5 || serviceEntity.getDiscount() > 15);
+                        case 3 -> list.removeIf(serviceEntity -> serviceEntity.getDiscount() <= 15 || serviceEntity.getDiscount() > 30);
+                        case 4 -> list.removeIf(serviceEntity -> serviceEntity.getDiscount() <= 30 || serviceEntity.getDiscount() > 75);
+                        case 5 -> list.removeIf(serviceEntity -> serviceEntity.getDiscount() <= 70);
                     }
                     model.setRows(list);
                     model.fireTableDataChanged();
+                    amountLabel.setText("Отображено " + list.size() + "/100");
                 } catch (SQLException throwables) {
                     throwables.printStackTrace();
-                    DialogUtil.ShowError(this, "Ошибка фильтрации");
                 }
             }
         });
     }
 
     private void initButtons() {
+        createButton.addActionListener(e -> {
+            dispose();
+            new ServiceCreateForm();
+        });
+
         sortButton.addActionListener(e -> {
             if(sortFlag) {
                 model.getRows().sort(new Comparator<ServiceEntity>() {
@@ -111,8 +88,41 @@ public class ServiceTableForm extends BaseForm {
                     }
                 });
             }
-            model.fireTableDataChanged();
             sortFlag = !sortFlag;
+            model.fireTableDataChanged();
         });
     }
+
+    private void initTable() {
+        try {
+            model = new CustomTableModel<>(
+                    ServiceEntity.class,
+                    new String[]{"ID", "Наименование услуги", "Стоимость", "Длительность", "Описание", "Скидка", "Дата", "Путь к картинке", "Картинка"},
+                    ServiceEntityManager.selectALl()
+            );
+            table.setRowHeight(50);
+            table.setModel(model);
+
+            TableColumn column = table.getColumn("ID");
+            column.setPreferredWidth(0);
+            column.setMinWidth(0);
+            column.setMaxWidth(0);
+
+            table.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if(e.getButton() == MouseEvent.BUTTON2) {
+                        int row = table.rowAtPoint(e.getPoint());
+                        if(row != -1) {
+                            dispose();
+                            new ServiceUpdateForm(model.getRows().get(row));
+                        }
+                    }
+                }
+            });
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
 }
+

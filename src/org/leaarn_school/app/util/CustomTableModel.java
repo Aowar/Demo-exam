@@ -13,7 +13,8 @@ public class CustomTableModel<T> extends AbstractTableModel {
     private Class<T> cls;
     private String[] columnNames;
 
-    @Getter @Setter
+    @Getter
+    @Setter
     private List<T> rows;
 
     @Override
@@ -44,7 +45,8 @@ public class CustomTableModel<T> extends AbstractTableModel {
             return field.get(rows.get(rowIndex));
         } catch (IllegalAccessException e) {
             e.printStackTrace();
-            return "Error";
+            return null;
         }
     }
 }
+

@@ -45,7 +45,6 @@ public class ServiceCreateForm extends BaseForm {
                 date = DATE_FORMAT.parse(dateField.getText());
             } catch (ParseException parseException) {
                 parseException.printStackTrace();
-                DialogUtil.ShowError(this, "Ошибка обработки даты");
             }
             int discount = (int) discountSpinner.getValue();
 
